@@ -31,6 +31,14 @@ def main():
         print('Please provide some parameters for the current experiment. Check-out args.py for more info!')
         sys.exit()
 
+    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
+
+    if len(args.gpu.split(',')) > 1:
+        config['_parallel'] = True
+        config['_gpu'] = args.gpu
+
+    utils.set_gpu(args.gpu)
+
     # initialize seeds
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -249,11 +257,4 @@ def main():
 
 
 if __name__ == '__main__':
-    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-
-    if len(args.gpu.split(',')) > 1:
-        config['_parallel'] = True
-        config['_gpu'] = args.gpu
-
-    utils.set_gpu(args.gpu)
-    main(config)
+    main()

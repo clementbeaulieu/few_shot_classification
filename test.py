@@ -14,7 +14,7 @@ import utils
 
 from args import parse_args
 
-def main(config):
+def main():
     global args
     if len(sys.argv) > 1:
         args = parse_args()
@@ -24,6 +24,14 @@ def main(config):
     else:
         print('Please provide some parameters for the current experiment. Check-out args.py for more info!')
         sys.exit()
+
+    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
+
+    if len(args.gpu.split(',')) > 1:
+        config['_parallel'] = True
+        config['_gpu'] = args.gpu
+
+    utils.set_gpu(args.gpu)
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -88,11 +96,4 @@ def main(config):
 
 
 if __name__ == '__main__':
-    config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
-
-    if len(args.gpu.split(',')) > 1:
-        config['_parallel'] = True
-        config['_gpu'] = args.gpu
-
-    utils.set_gpu(args.gpu)
-    main(config)
+    main()
