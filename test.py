@@ -1,5 +1,5 @@
-import argparse
 import random
+import sys
 
 import yaml
 import torch
@@ -12,12 +12,23 @@ import datasets
 import models
 import utils
 
+from args import parse_args
 
 def main(config):
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
+    global args
+    if len(sys.argv) > 1:
+        args = parse_args()
+        print('----- Experiments parameters -----')
+        for k, v in args.__dict__.items():
+            print(k, ':', v)
+    else:
+        print('Please provide some parameters for the current experiment. Check-out args.py for more info!')
+        sys.exit()
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
     # torch.backends.cudnn.deterministic = True
     # torch.backends.cudnn.benchmark = False
 
@@ -77,16 +88,6 @@ def main(config):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config',
-                        help='configuration file')
-    parser.add_argument('--gpu',
-                        help='gpu device number',
-                        type=str, default='0')
-    parser.add_argument('--efficient',
-                        help='if True, enables gradient checkpointing',
-                        action='store_true')
-    args = parser.parse_args()
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
 
     if len(args.gpu.split(',')) > 1:

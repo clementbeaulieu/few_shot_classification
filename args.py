@@ -9,57 +9,68 @@ def parse_args():
     # expriment settings
 
     # name of the experiment
-    parser.add_argument('--name', default='digitsum', type=str, help='name of experiment')
-    parser.add_argument('--train-type', default='regression', type=str, help='type of learning task (regression, classification or unsupervised)')
-    parser.add_argument('--val-type', default='regression', type=str, help='type of validation task (regression, classification, unsupervised or customed)')
-    parser.add_argument('--test-type', default='regression', type=str, help='type of test task (regression, classification, unsupervised or customed)')
-    parser.add_argument('--print-freq-train', type=int, default=10, help='print freq of batch values on training')
-    parser.add_argument('--print-freq-val', type=int, default=10, help='print freq of batch values on training')
-
-    # name of the dataset used in the experiment
-    parser.add_argument('--dataset', default='miniimagenet', type=str, help='name of dataset to train upon')
-    parser.add_argument('--test', dest='test', action='store_true', default=False, help='To run inference on test set.')
+    parser.add_argument('--name', default='convnet4_5_way_1_shot', type=str, help='name of experiment')
 
     # main folder for data storage
-    parser.add_argument('--root-dir', type=str, default=None)
+    parser.add_argument('--root-dir', type=str, default='/Users/theophilebeaulieu/Desktop/Clement/master_thesis/project/data')
+
+    parser.add_argument('--config', type = str, default = None, help='configuration file')
+    parser.add_argument('--name', help='model name', type=str, default=None)
+    parser.add_argument('--tag',help='auxiliary information',type=str, default=None)
+    parser.add_argument('--gpu',help='gpu device number',type=str, default='0')
+    parser.add_argument('--efficient',help='if True, enables gradient checkpointing',action='store_true')
+
+    # name of the dataset used in the experiment
+    parser.add_argument('--dataset', default='mini-imagenet', type=str, help='name of dataset to train upon')
+    parser.add_argument('--test', dest='test', action='store_true', default=False, help='To run inference on test set.')
+
+    # train parameters
+    parser.add_argument('--train-split', default='meta-train', type=str, help='train split')
+    parser.add_argument('--train-image-size', default=84, type=int, help='train image size')
+    parser.add_argument('--train-normalization', action='store_true', default=False, help='train normalization True or False (default False)')
+    parser.add_argument('--train-n_batch', default=1, type=int, help='train number batches')
+    parser.add_argument('--train-n_episode', default=4, type=int, help='train number episodes')
+    parser.add_argument('--train-n_way', default=5, type=int, help='train number classes')
+    parser.add_argument('--train-n_shot', default=1, type=int, help='train number shots per class')
+    parser.add_argument('--train-n_query', default=15, type=int, help='train number queries')
+
+    # val parameters
+    parser.add_argument('--val-split', default='meta-train', type=str, help='train split')
+    parser.add_argument('--val-image-size', default=84, type=int, help='train image size')
+    parser.add_argument('--val-normalization', action='store_true', default=False, help='train normalization True or False (default False)')
+    parser.add_argument('--val-n_batch', default=1, type=int, help='train number batches')
+    parser.add_argument('--val-n_episode', default=4, type=int, help='train number episodes')
+    parser.add_argument('--val-n_way', default=5, type=int, help='train number classes')
+    parser.add_argument('--val-n_shot', default=1, type=int, help='train number shots per class')
+    parser.add_argument('--val-n_query', default=15, type=int, help='train number queries')
 
     # model settings
-    parser.add_argument('--arch', type=str, default='digitsum_image', help='name of the architecture to be used')
-    parser.add_argument('--model-name', type=str, default='digitsum_image50', help='name of the model to be used')
-    parser.add_argument('--resume', default='', type=str, metavar='PATH',
-                        help='which checkpoint to resume from. possible values["latest", "best", epoch]')
+    parser.add_argument('--encoder', type=str, default='convnet4', help='encoder')
+    parser.add_argument('--encoder-args-bn-args-track-running-stats', action='store_true', default=False, help='encoder track running stats')   
+    parser.add_argument('--classifier', type=str, default='logistic', help='classifier')
 
-    # params for digitsum image experiment
-    parser.add_argument('--min-size-train', type=int, default = 2, help='min size for train set sizes')
-    parser.add_argument('--max-size-train', type=int, default = 10, help='max size for train set sizes')
-    parser.add_argument('--min-size-val', type=int, default = 5, help='min size validation/test for set sizes')
-    parser.add_argument('--max-size-val', type=int, default = 50, help='max size validation/test for set sizes')
-    parser.add_argument('--dataset-size-train', type=int, default = 100000, help='size of the train dataset of sets')
-    parser.add_argument('--dataset-size-val', type=int, default = 10000, help='size of the validation/test dataset of sets')
-    parser.add_argument('--set-weight', type=str, default='mean', help='default set_weight metrics for set_MAP score (mean, linear or exp)')
+    parser.add_argument('--load', default='', type=str, metavar='PATH', help='which checkpoint to resume from. possible values["latest", "best", epoch]')
 
-    # params for classification tasks
-    parser.add_argument('--num-classes', default=0, type=int)
+    # inner args settings
+    parser.add_argument('--inner-args-n-step', type=int, default=5, help='inner args n_step')
+    parser.add_argument('--inner-args-encoder_lr', type=float, default=0.01, help='encoder lr')
+    parser.add_argument('--inner-args-classifier_lr', type=float, default=0.01, help='classifier lr')
+    parser.add_argument('--inner-args-first-order', action='store_true', default=False, help='first order')
+
     # number of workers for the dataloader
     parser.add_argument('-j', '--workers', type=int, default=4)
 
     # training settings
     parser.add_argument('--start-epoch', type=int, default=1)
     parser.add_argument('--step', type=int, default=20, help='frequency of updating learning rate')
-    parser.add_argument('--batch-size', type=int, default=64, metavar='N', help='input batch size for training (default: 64)')
-    parser.add_argument('--epochs', type=int, default=100, metavar='N', help='number of epochs to train (default: 70)')
+    parser.add_argument('--epoch', type=int, default=10, metavar='N', help='number of epochs to train (default: 10)')
     parser.add_argument('--optimizer', default='adam', type=str, help='name of the optimizer')
-    parser.add_argument('--scheduler', default='StepLR', type=str, help='name of the learning rate scheduler')
-    parser.add_argument('--lr', type=float, default=0.01, metavar='LR', help='learning rate (default: 0.01)')
-    parser.add_argument('--momentum', type=float, default=0.9, metavar='M', help='sgd momentum (default: 0.9)')
-    parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
-    parser.add_argument('--lr-decay', default=0.995, type=float, metavar='lrd', help='learning rate decay (default: 0.995)')
-    parser.add_argument('--criterion', default='mse', type=str, help='criterion to optimize')
+    parser.add_argument('--optimizer-args-lr', type=float, default=0.01, help='learning rate')
 
     # misc settings
-    parser.add_argument('--seed', type=int, default=42, metavar='S', help='random seed (default: 42)')
+    parser.add_argument('--seed', type=int, default=0, metavar='S', help='random seed (default: 0)')
     parser.add_argument('--disable-cuda', action='store_true', default=False, help='disables CUDA training / using only CPU')
-    parser.add_argument('--tensorboard', dest='tensorboard', action='store_true',default=False, help='Use tensorboard to track and plot')
+    parser.add_argument('--tensorboard', dest='tensorboard', action='store_true', default=False, help='Use tensorboard to track and plot')
 
     args = parser.parse_args()
 

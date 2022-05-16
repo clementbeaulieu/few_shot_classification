@@ -1,5 +1,6 @@
 import argparse
 import os
+import sys
 import random
 from collections import OrderedDict
 
@@ -17,15 +18,26 @@ import models
 import utils
 import utils.optimizers as optimizers
 
+from args import parse_args
 
-def main(config):
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
-    # torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = False
+def main():
+    global args
+    if len(sys.argv) > 1:
+        args = parse_args()
+        print('----- Experiments parameters -----')
+        for k, v in args.__dict__.items():
+            print(k, ':', v)
+    else:
+        print('Please provide some parameters for the current experiment. Check-out args.py for more info!')
+        sys.exit()
 
+    # initialize seeds
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+
+    # checkpoints
     ckpt_name = args.name
     if ckpt_name is None:
         ckpt_name = config['encoder']
@@ -45,22 +57,16 @@ def main(config):
 
     # meta-train
     train_set = datasets.make(config['dataset'], **config['train'])
-    utils.log('meta-train set: {} (x{}), {}'.format(
-        train_set[0][0].shape, len(train_set), train_set.n_classes))
-    train_loader = DataLoader(
-        train_set, config['train']['n_episode'],
-        collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
+    utils.log('meta-train set: {} (x{}), {}'.format(train_set[0][0].shape, len(train_set), train_set.n_classes))
+    train_loader = DataLoader(train_set, config['train']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
 
     # meta-val
     eval_val = False
     if config.get('val'):
         eval_val = True
         val_set = datasets.make(config['dataset'], **config['val'])
-        utils.log('meta-val set: {} (x{}), {}'.format(
-            val_set[0][0].shape, len(val_set), val_set.n_classes))
-        val_loader = DataLoader(
-            val_set, config['val']['n_episode'],
-            collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
+        utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
+        val_loader = DataLoader(val_set, config['val']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
 
     ##### Model and Optimizer #####
 
@@ -243,22 +249,6 @@ def main(config):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--config',
-                        help='configuration file')
-    parser.add_argument('--name',
-                        help='model name',
-                        type=str, default=None)
-    parser.add_argument('--tag',
-                        help='auxiliary information',
-                        type=str, default=None)
-    parser.add_argument('--gpu',
-                        help='gpu device number',
-                        type=str, default='0')
-    parser.add_argument('--efficient',
-                        help='if True, enables gradient checkpointing',
-                        action='store_true')
-    args = parser.parse_args()
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
 
     if len(args.gpu.split(',')) > 1:

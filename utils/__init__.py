@@ -2,12 +2,21 @@ import os
 import shutil
 import time
 
+import torch
+import torchvision
+import torch.backends.cudnn as cudnn
+
 import numpy as np
 import scipy.stats as stats
 
 
 _log_path = None
 
+def setup_env(args):
+    torch.manual_seed(args.seed)
+    if args.cuda:
+        torch.cuda.manual_seed(args.seed)
+        cudnn.benchmark = True
 
 def set_log_path(path):
     global _log_path
