@@ -33,7 +33,7 @@ def main():
 
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
 
-    if len(args.gpu.split(',')) > 1:
+    '''if len(args.gpu.split(',')) > 1:
         config['_parallel'] = True
         config['_gpu'] = args.gpu
 
@@ -43,7 +43,7 @@ def main():
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)'''
 
     # checkpoints
     utils.ensure_path(args.log_dir)
@@ -53,16 +53,16 @@ def main():
 
     ##### Dataset #####
 
-    # meta-train
-    train_set = datasets.make(config['dataset'], **config['train'],root_path=args.data_dir)
+    ##### meta-train
+    train_set = datasets.make('meta-'+ args.dataset, **config['train'],root_path=args.data_dir)
     utils.log('meta-train set: {} (x{}), {}'.format(train_set[0][0].shape, len(train_set), train_set.n_classes))
     train_loader = DataLoader(train_set, config['train']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
 
-    # meta-val
+    ##### meta-val
     eval_val = False
     if config.get('val'):
         eval_val = True
-        val_set = datasets.make(config['dataset'], **config['val'],root_path=args.data_dir)
+        val_set = datasets.make('meta-'+ args.dataset, **config['val'],root_path=args.data_dir)
         utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
         val_loader = DataLoader(val_set, config['val']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
 
@@ -75,8 +75,7 @@ def main():
         config['encoder_args'] = ckpt['encoder_args']
         config['classifier'] = ckpt['classifier']
         config['classifier_args'] = ckpt['classifier_args']
-        model = models.load(ckpt, load_clf=(
-            not inner_args['reset_classifier']))
+        model = models.load(ckpt, load_clf=(not inner_args['reset_classifier']))
         optimizer, lr_scheduler = optimizers.load(ckpt, model.parameters())
         start_epoch = ckpt['training']['epoch'] + 1
         max_va = ckpt['training']['max_va']

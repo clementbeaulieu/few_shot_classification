@@ -4,7 +4,7 @@ train:
   image_size: 84
   normalization: False
   transform: null
-  n_batch: 200
+  n_batch: 2 #200
   n_episode: 4
   n_way: 5
   n_shot: 1
@@ -14,7 +14,7 @@ val:
   image_size: 84
   normalization: False
   transform: null
-  n_batch: 200
+  n_batch: 2 #200
   n_episode: 4
   n_way: 5
   n_shot: 1
@@ -38,4 +38,4 @@ optimizer: adam
 optimizer_args:
   lr: 0.001
 
-epoch: 300
+epoch: 3 #300
