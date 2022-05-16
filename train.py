@@ -46,20 +46,10 @@ def main():
     torch.cuda.manual_seed(args.seed)
 
     # checkpoints
-    ckpt_name = args.name
-    if ckpt_name is None:
-        ckpt_name = config['encoder']
-        ckpt_name += '_' + config['dataset'].replace('meta-', '')
-        ckpt_name += '_{}_way_{}_shot'.format(
-            config['train']['n_way'], config['train']['n_shot'])
-    if args.tag is not None:
-        ckpt_name += '_' + args.tag
-
-    ckpt_path = os.path.join('./save', ckpt_name)
-    utils.ensure_path(ckpt_path)
-    utils.set_log_path(ckpt_path)
-    writer = SummaryWriter(os.path.join(ckpt_path, 'tensorboard'))
-    yaml.dump(config, open(os.path.join(ckpt_path, 'config.yaml'), 'w'))
+    utils.ensure_path(args.log_dir)
+    utils.set_log_path(args.log_dir)
+    writer = SummaryWriter(os.path.join(args.log_dir, 'tensorboard'))
+    yaml.dump(config, open(os.path.join(args.log_dir, 'config.yaml'), 'w'))
 
     ##### Dataset #####
 
@@ -246,12 +236,12 @@ def main():
 
         # 'epoch-last.pth': saved at the latest epoch
         # 'max-va.pth': saved when validation accuracy is at its maximum
-        torch.save(ckpt, os.path.join(ckpt_path, 'epoch-last.pth'))
-        torch.save(trlog, os.path.join(ckpt_path, 'trlog.pth'))
+        torch.save(ckpt, os.path.join(args.log_dir, 'epoch-last.pth'))
+        torch.save(trlog, os.path.join(args.log_dir, 'trlog.pth'))
 
         if aves['va'] > max_va:
             max_va = aves['va']
-            torch.save(ckpt, os.path.join(ckpt_path, 'max-va.pth'))
+            torch.save(ckpt, os.path.join(args.log_dir, 'max-va.pth'))
 
         writer.flush()
 

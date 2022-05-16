@@ -9,7 +9,7 @@ def parse_args():
     # expriment settings
 
     # name of the experiment
-    parser.add_argument('--name', default='convnet4_5_way_1_shot', type=str, help='name of experiment')
+    #parser.add_argument('--exp-name', default='convnet4_5_way_1_shot', type=str, help='name of experiment')
 
     # main folder for data storage
     parser.add_argument('--root-dir', type=str, default='/Users/theophilebeaulieu/Desktop/Clement/master_thesis/project/data')
@@ -73,6 +73,11 @@ def parse_args():
     parser.add_argument('--tensorboard', dest='tensorboard', action='store_true', default=False, help='Use tensorboard to track and plot')
 
     args = parser.parse_args()
+
+    if args.name is None:
+        args.name = args.encoder + '_' + args.dataset.replace('meta-', '') + '_{}_way_{}_shot'.format(args.train_n_way, args.train_n_shot)
+    if args.tag is not None:
+        args.name += '_' + args.tag
 
     # update args
     args.data_dir = '{}/{}'.format(args.root_dir, args.dataset)
