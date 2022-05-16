@@ -2,8 +2,6 @@ import os
 
 import torch
 
-
-DEFAULT_ROOT = '/Users/theophilebeaulieu/Desktop/Clement/master_thesis/project/data'
 datasets = {}
 
 def register(name):
@@ -14,8 +12,6 @@ def register(name):
 
 
 def make(name, **kwargs):
-    if kwargs.get('root_path') is None:
-        kwargs['root_path'] = os.path.join(DEFAULT_ROOT, name.replace('meta-', ''))
     dataset = datasets[name](**kwargs)
     return dataset
 

@@ -42,7 +42,7 @@ def main():
 
     ##### Dataset #####
 
-    dataset = datasets.make(config['dataset'], **config['test'])
+    dataset = datasets.make(config['dataset'], **config['test'],root_path=args.data_dir)
     utils.log('meta-test set: {} (x{}), {}'.format(
         dataset[0][0].shape, len(dataset), dataset.n_classes))
     loader = DataLoader(dataset, config['test']['n_episode'],
