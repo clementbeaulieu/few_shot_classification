@@ -8,16 +8,20 @@ img_size = 84
 
 path_data = "/Users/theophilebeaulieu/Desktop/Clement/master_thesis/project/data/"
 
-test_csv_file = path_data + "mini-imagenet_split/test.csv"
-train_csv_file = path_data + "mini-imagenet_split/train.csv"
-val_csv_file = path_data + "mini-imagenet_split/val.csv"
+test_csv_file = path_data + "mini_imagenet_split/test.csv"
+train_csv_file = path_data + "mini_imagenet_split/train.csv"
+val_csv_file = path_data + "mini_imagenet_split/val.csv"
 
-test_pkl = path_data + "imagenet/mini-imagenet-cache-test.pkl"
-train_pkl = path_data + "imagenet/mini-imagenet-cache-train.pkl"
-val_pkl = path_data + "imagenet/mini-imagenet-cache-val.pkl"
+test_pkl = path_data + "imagenet-pkl/mini-imagenet-cache-test.pkl"
+train_pkl = path_data + "imagenet-pkl/mini-imagenet-cache-train.pkl"
+val_pkl = path_data + "imagenet-pkl/mini-imagenet-cache-val.pkl"
 
 def pkl_to_raw(csv_file, pkl_file, dirname):
-    dir = os.path.join(path_data, dirname)
+    dir_imagenet = os.path.join(path_data, "mini_imagenet")
+    if not os.path.isdir(dir_imagenet):
+        os.mkdir(dir_imagenet)
+        print("made: ", "mini_imagenet")
+    dir = os.path.join(dir_imagenet, dirname)
     if not os.path.isdir(dir):
         os.mkdir(dir)
         print("made: ", dirname)
