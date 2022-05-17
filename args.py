@@ -53,7 +53,7 @@ def parse_args():
     parser.add_argument('--classifier', type=str, default='logistic', help='classifier')
 
     # resume from checkpoint
-    parser.add_argument('--load', default='', type=str, metavar='PATH', help='which checkpoint to resume from. possible values["latest", "best", epoch]')
+    parser.add_argument('--load', default='', type=str, metavar='PATH', help='which checkpoint to resume from. possible values["latest", "best"]')
 
     # number of workers for the dataloader
     parser.add_argument('-j', '--workers', type=int, default=4)
@@ -62,7 +62,7 @@ def parse_args():
     parser.add_argument('--start-epoch', type=int, default=1)
     parser.add_argument('--epoch', type=int, default=10, metavar='N', help='number of epochs to train (default: 10)')
     parser.add_argument('--optimizer', default='adam', type=str, help='name of the optimizer')
-    
+
     # misc settings
     parser.add_argument('--seed', type=int, default=0, metavar='S', help='random seed (default: 0)')
     parser.add_argument('--disable-cuda', action='store_true', default=False, help='disables CUDA training / using only CPU')
