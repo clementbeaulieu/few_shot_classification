@@ -35,6 +35,13 @@ def main():
         sys.exit()
 
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
+    
+    # parallel computing
+    if len(args.gpu.split(',')) > 1:
+        config['_parallel'] = True
+        config['_gpu'] = args.gpu
+
+    utils.set_gpu(args.gpu)
 
     # init random seeds
     utils.setup_env(args)
