@@ -101,6 +101,5 @@ def main():
             epoch, aves_va.item() * 100,
             utils.mean_confidence_interval(va_lst) * 100))
 
-
 if __name__ == '__main__':
     main()

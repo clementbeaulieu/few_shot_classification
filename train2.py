@@ -108,6 +108,7 @@ def main():
         model = nn.DataParallel(model)
 
     utils.log('num params: {}'.format(utils.compute_n_params(model)))
+    
     timer_elapsed, timer_epoch = utils.Timer(), utils.Timer()
 
     ##### Training and evaluation #####
