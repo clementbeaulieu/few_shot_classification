@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('--train-image-size', default=84, type=int, help='train image size')
     parser.add_argument('--train-normalization', action='store_false', default=True, help='train normalization True or False (default False)')
     parser.add_argument('--train-transform', default=None, type=str, help='train transform (default None)') 
-    parser.add_argument('--train-n_batch', default=1, type=int, help='train number batches')
+    parser.add_argument('--train-n_batch', default=100, type=int, help='train number batches')
     parser.add_argument('--train-n_episode', default=4, type=int, help='train number episodes')
     parser.add_argument('--train-n_way', default=5, type=int, help='train number classes')
     parser.add_argument('--train-n_shot', default=1, type=int, help='train number shots per class')
@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--val-image-size', default=84, type=int, help='val image size')
     parser.add_argument('--val-normalization', dest='val_normalization', action='store_false', default=True, help='val normalization True or False (default False)')
     parser.add_argument('--val-transform', default=None, type=str, help='val transform (default None)') 
-    parser.add_argument('--val-n_batch', default=1, type=int, help='val number batches')
+    parser.add_argument('--val-n_batch', default=100, type=int, help='val number batches')
     parser.add_argument('--val-n_episode', default=4, type=int, help='val number episodes')
     parser.add_argument('--val-n_way', default=5, type=int, help='val number classes')
     parser.add_argument('--val-n_shot', default=1, type=int, help='val number shots per class')
@@ -71,7 +71,7 @@ def parse_args():
 
     # training settings
     parser.add_argument('--start-epoch', type=int, default=1)
-    parser.add_argument('--epoch', type=int, default=10, metavar='N', help='number of epochs to train (default: 10)')
+    parser.add_argument('--epoch', type=int, default=50, metavar='N', help='number of epochs to train (default: 10)')
     parser.add_argument('--optimizer', default='adam', type=str, help='name of the optimizer')
 
     # misc settings

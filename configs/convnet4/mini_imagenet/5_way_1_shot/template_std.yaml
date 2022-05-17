@@ -1,0 +1,25 @@
+encoder_args:
+  bn_args:
+    track_running_stats: True
+    episodic:
+      - conv1
+      - conv2
+      - conv3
+      - conv4
+
+inner_args:
+  reset_classifier: True
+  n_step: 5
+  encoder_lr: 0.01
+  classifier_lr: 0.01
+  momentum: 0.9
+  weight_decay: 5.e-4
+  first_order: False
+
+optimizer_args:
+  lr: 0.01
+  weight_decay: 5.e-4
+  schedule: step
+  milestones:
+    - 120
+    - 140

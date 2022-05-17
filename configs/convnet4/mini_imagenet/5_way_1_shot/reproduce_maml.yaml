@@ -10,5 +10,6 @@ inner_args:
   frozen:
     - bn
 
+optimizer: adam
 optimizer_args:
-  lr: 0.001
+  lr: 0.01
