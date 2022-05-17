@@ -4,13 +4,13 @@ import sys
 import random
 from collections import OrderedDict
 
-import yaml
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
+
 from tensorboardX import SummaryWriter
 
 import datasets
@@ -18,7 +18,10 @@ import models
 import utils
 import utils.optimizers as optimizers
 
+from loaders import get_loader
 from args import parse_args
+
+import yaml
 
 def main():
     global args
@@ -33,48 +36,49 @@ def main():
 
     config = yaml.load(open(args.config, 'r'), Loader=yaml.FullLoader)
 
-    '''if len(args.gpu.split(',')) > 1:
-        config['_parallel'] = True
-        config['_gpu'] = args.gpu
+    # init random seeds
+    utils.setup_env(args)
 
-    utils.set_gpu(args.gpu)
-
-    # initialize seeds
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)'''
-
-    # checkpoints
+    # init tensorboard summary is asked and initialize checkpoints
     utils.ensure_path(args.log_dir)
     utils.set_log_path(args.log_dir)
-    writer = SummaryWriter(os.path.join(args.log_dir, 'tensorboard'))
     yaml.dump(config, open(os.path.join(args.log_dir, 'config.yaml'), 'w'))
+    writer = SummaryWriter(os.path.join(args.log_dir, 'tensorboard')) if args.tensorboard else None
 
-    ##### Dataset #####
+    ##### DataLoaders #####
 
-    ##### meta-train
-    ###TODO
-    train_set = datasets.make('meta-'+ args.dataset, **config['train'],root_path=args.data_dir)
-    utils.log('meta-train set: {} (x{}), {}'.format(train_set[0][0].shape, len(train_set), train_set.n_classes))
-    train_loader = DataLoader(train_set, config['train']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
+    # init data loaders
+    if args.meta:
+        args.dataset = 'meta_' + args.dataset #to get appropriate loader if meta-training requested
 
-    ##### meta-val
+    loader = get_loader(args)
+
+    ##### train loader
+    if args.meta:
+        train_set = loader(data_dir=args.data_dir, split='train', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
+        meta_collate_fn = train_set.meta_collate_fn
+        utils.log('meta-train set: {} (x{}), {}'.format(train_set[0][0].shape, len(train_set), train_set.n_classes))
+        train_loader = DataLoader(train_set, args.train_n_episode, collate_fn=meta_collate_fn, num_workers=args.workers, pin_memory=True)
+
+    ##### val loader
     eval_val = False
-    if config.get('val'):
-        eval_val = True
-        val_set = datasets.make('meta-'+ args.dataset, **config['val'],root_path=args.data_dir)
-        utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
-        val_loader = DataLoader(val_set, config['val']['n_episode'], collate_fn=datasets.collate_fn, num_workers=1, pin_memory=True)
+
+    if args.meta:
+        if args.val:
+            eval_val = True
+            val_meta_collate_fn = val_set.meta_collate_fn
+            val_set = loader(data_dir=args.data_dir, split='val', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
+            utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
+            val_loader = DataLoader(val_set, args.val_n_episode, collate_fn=val_meta_collate_fn, num_workers=args.workers, pin_memory=True)
 
     ##### Model and Optimizer #####
 
     inner_args = utils.config_inner_args(config.get('inner_args'))
-    if config.get('load'):
-        ckpt = torch.load(config['load'])
-        config['encoder'] = ckpt['encoder']
+    if args.load in ['best', 'latest']:
+        ckpt = torch.load(os.path.join(args.log_dir, args.load))
+        args.encoder = ckpt['encoder']
         config['encoder_args'] = ckpt['encoder_args']
-        config['classifier'] = ckpt['classifier']
+        args.classifier = ckpt['classifier']
         config['classifier_args'] = ckpt['classifier_args']
         model = models.load(ckpt, load_clf=(not inner_args['reset_classifier']))
         optimizer, lr_scheduler = optimizers.load(ckpt, model.parameters())
@@ -83,13 +87,11 @@ def main():
     else:
         config['encoder_args'] = config.get('encoder_args') or dict()
         config['classifier_args'] = config.get('classifier_args') or dict()
-        config['encoder_args']['bn_args']['n_episode'] = config['train']['n_episode']
-        config['classifier_args']['n_way'] = config['train']['n_way']
-        model = models.make(config['encoder'], config['encoder_args'],
-                            config['classifier'], config['classifier_args'])
-        optimizer, lr_scheduler = optimizers.make(
-            config['optimizer'], model.parameters(), **config['optimizer_args'])
-        start_epoch = 1
+        config['encoder_args']['bn_args']['n_episode'] = args.train_n_episode
+        config['classifier_args']['n_way'] = args.train_n_way
+        model = models.make(args.encoder, config['encoder_args'],args.classifier, config['classifier_args'])
+        optimizer, lr_scheduler = optimizers.make(args.optimizer, model.parameters(), **config['optimizer_args'])
+        start_epoch = args.start_epoch
         max_va = 0.
 
     if args.efficient:
@@ -112,13 +114,16 @@ def main():
     for k in aves_keys:
         trlog[k] = []
 
-    for epoch in range(start_epoch, config['epoch'] + 1):
+    for epoch in range(start_epoch, args.epoch + 1):
         timer_epoch.start()
         aves = {k: utils.AverageMeter() for k in aves_keys}
 
         # meta-train
         model.train()
-        writer.add_scalar('lr', optimizer.param_groups[0]['lr'], epoch)
+        
+        if args.tensorboard:
+            writer.add_scalar('lr', optimizer.param_groups[0]['lr'], epoch)
+
         np.random.seed(epoch)
 
         for data in tqdm(train_loader, desc='meta-train', leave=False):
@@ -191,14 +196,17 @@ def main():
         # formats output
         log_str = 'epoch {}, meta-train {:.4f}|{:.4f}'.format(
             str(epoch), aves['tl'], aves['ta'])
-        writer.add_scalars('loss', {'meta-train': aves['tl']}, epoch)
-        writer.add_scalars('acc', {'meta-train': aves['ta']}, epoch)
+
+        if args.tensorboard:
+            writer.add_scalars('loss', {'meta-train': aves['tl']}, epoch)
+            writer.add_scalars('acc', {'meta-train': aves['ta']}, epoch)
 
         if eval_val:
             log_str += ', meta-val {:.4f}|{:.4f}'.format(
                 aves['vl'], aves['va'])
-            writer.add_scalars('loss', {'meta-val': aves['vl']}, epoch)
-            writer.add_scalars('acc', {'meta-val': aves['va']}, epoch)
+            if args.tensorboard:
+                writer.add_scalars('loss', {'meta-val': aves['vl']}, epoch)
+                writer.add_scalars('acc', {'meta-val': aves['va']}, epoch)
 
         log_str += ', {} {}/{}'.format(t_epoch, t_elapsed, t_estimate)
         utils.log(log_str)
@@ -213,7 +221,7 @@ def main():
             'epoch': epoch,
             'max_va': max(max_va, aves['va']),
 
-            'optimizer': config['optimizer'],
+            'optimizer': args.optimizer,
             'optimizer_args': config['optimizer_args'],
             'optimizer_state_dict': optimizer.state_dict(),
             'lr_scheduler_state_dict': lr_scheduler.state_dict()
@@ -223,27 +231,28 @@ def main():
             'file': __file__,
             'config': config,
 
-            'encoder': config['encoder'],
+            'encoder': args.encoder,
             'encoder_args': config['encoder_args'],
             'encoder_state_dict': model_.encoder.state_dict(),
 
-            'classifier': config['classifier'],
+            'classifier': args.classifier,
             'classifier_args': config['classifier_args'],
             'classifier_state_dict': model_.classifier.state_dict(),
 
             'training': training,
         }
 
-        # 'epoch-last.pth': saved at the latest epoch
-        # 'max-va.pth': saved when validation accuracy is at its maximum
-        torch.save(ckpt, os.path.join(args.log_dir, 'epoch-last.pth'))
+        # 'latest.pth': saved at the latest epoch
+        # 'best.pth': saved when validation accuracy is at its maximum
+        torch.save(ckpt, os.path.join(args.log_dir, 'latest.pth'))
         torch.save(trlog, os.path.join(args.log_dir, 'trlog.pth'))
 
         if aves['va'] > max_va:
             max_va = aves['va']
-            torch.save(ckpt, os.path.join(args.log_dir, 'max-va.pth'))
+            torch.save(ckpt, os.path.join(args.log_dir, 'best.pth'))
 
-        writer.flush()
+        if args.tensorboard:
+            writer.flush()
 
 
 if __name__ == '__main__':
