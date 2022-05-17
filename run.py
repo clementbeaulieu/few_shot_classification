@@ -146,8 +146,8 @@ def main():
 
         for data in tqdm(train_loader, desc='meta-train', leave=False):
             x_shot, x_query, y_shot, y_query = data
-            '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-            x_query, y_query = x_query.cuda(), y_query.cuda()'''
+            x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
+            x_query, y_query = x_query.cuda(), y_query.cuda()
 
             if inner_args['reset_classifier']:
                 if config.get('_parallel'):
@@ -179,8 +179,8 @@ def main():
 
             for data in tqdm(val_loader, desc='meta-val', leave=False):
                 x_shot, x_query, y_shot, y_query = data
-                '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-                x_query, y_query = x_query.cuda(), y_query.cuda()'''
+                x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
+                x_query, y_query = x_query.cuda(), y_query.cuda()
 
                 if inner_args['reset_classifier']:
                     if config.get('_parallel'):
