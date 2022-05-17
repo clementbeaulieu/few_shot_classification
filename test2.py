@@ -52,7 +52,7 @@ def main():
             test_set = loader(data_dir=args.data_dir, split='test', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
             meta_collate_fn = test_set.meta_collate_fn
             utils.log('meta-test set: {} (x{}), {}'.format(test_set[0][0].shape, len(test_set), test_set.n_classes))
-            train_loader = DataLoader(test_set, args.train_n_episode, collate_fn=meta_collate_fn, num_workers=args.workers, pin_memory=True)
+            test_loader = DataLoader(test_set, args.train_n_episode, collate_fn=meta_collate_fn, num_workers=args.workers, pin_memory=True)
 
     ##### Model #####
 
@@ -76,7 +76,7 @@ def main():
     va_lst = []
 
     for epoch in range(1, args.epoch + 1):
-        for data in tqdm(loader, leave=False):
+        for data in tqdm(test_loader, leave=False):
             x_shot, x_query, y_shot, y_query = data
             x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
             x_query, y_query = x_query.cuda(), y_query.cuda()
@@ -89,7 +89,7 @@ def main():
 
             logits = model(x_shot, x_query, y_shot,
                            inner_args, meta_train=False)
-            logits = logits.view(-1, config['test']['n_way'])
+            logits = logits.view(-1, args.test_n_way)
             labels = y_query.view(-1)
 
             pred = torch.argmax(logits, dim=1)
