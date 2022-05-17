@@ -75,7 +75,7 @@ def main():
 
     inner_args = utils.config_inner_args(config.get('inner_args'))
     if args.load in ['best', 'latest']:
-        ckpt = torch.load(os.path.join(args.log_dir, args.load))
+        ckpt = torch.load(os.path.join(args.log_dir, 'args.load' + '.pth'))
         args.encoder = ckpt['encoder']
         config['encoder_args'] = ckpt['encoder_args']
         args.classifier = ckpt['classifier']
@@ -92,7 +92,7 @@ def main():
         model = models.make(args.encoder, config['encoder_args'],args.classifier, config['classifier_args'])
         optimizer, lr_scheduler = optimizers.make(args.optimizer, model.parameters(), **config['optimizer_args'])
         start_epoch = args.start_epoch
-        max_va = 0.
+        max_va = -1.0
 
     if args.efficient:
         model.go_efficient()
@@ -191,7 +191,7 @@ def main():
         t_epoch = utils.time_str(timer_epoch.end())
         t_elapsed = utils.time_str(timer_elapsed.end())
         t_estimate = utils.time_str(timer_elapsed.end() /
-                                    (epoch - start_epoch + 1) * (config['epoch'] - start_epoch + 1))
+                                    (epoch - start_epoch + 1) * (args.epoch - start_epoch + 1))
 
         # formats output
         log_str = 'epoch {}, meta-train {:.4f}|{:.4f}'.format(
