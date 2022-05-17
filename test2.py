@@ -1,5 +1,6 @@
 import random
 import sys
+import os
 
 import yaml
 import torch
@@ -55,7 +56,8 @@ def main():
 
     ##### Model #####
 
-    ckpt = torch.load(args.load)
+    assert args.load in ['best', 'latest']
+    ckpt = torch.load(os.path.join(args.log_dir, args.load + '.pth'))
     inner_args = utils.config_inner_args(config.get('inner_args'))
     model = models.load(ckpt, load_clf=(not inner_args['reset_classifier']))
 
