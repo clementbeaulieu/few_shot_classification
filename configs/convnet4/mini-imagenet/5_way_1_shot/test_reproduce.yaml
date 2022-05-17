@@ -1,0 +1,7 @@
+inner_args:
+  n_step: 10
+  encoder_lr: 0.01
+  classifier_lr: 0.01
+  first_order: False  # set to True for FOMAML
+  frozen:
+    - bn

@@ -23,7 +23,6 @@ def parse_args():
     # name of the dataset used in the experiment
     parser.add_argument('--dataset', default='mini_imagenet', type=str, help='name of dataset to train upon')
     parser.add_argument('--meta', dest='meta', default=False, action='store_true', help='For meta-training over dataset with few-shot classification')
-    parser.add_argument('--test', dest='test', action='store_true', default=False, help='To run inference on test set.')
 
     # train parameters
     parser.add_argument('--train-split', default='meta-train', type=str, help='train split')
@@ -47,6 +46,18 @@ def parse_args():
     parser.add_argument('--val-n_way', default=5, type=int, help='val number classes')
     parser.add_argument('--val-n_shot', default=1, type=int, help='val number shots per class')
     parser.add_argument('--val-n_query', default=15, type=int, help='val number queries')
+
+    # test parameters
+    parser.add_argument('--test', dest='test', action='store_true', default=False, help='To run inference on test set.')
+    parser.add_argument('--test-split', default='meta-test', type=str, help='test split')
+    parser.add_argument('--test-image-size', default=84, type=int, help='test image size')
+    parser.add_argument('--test-normalization', dest='test_normalization', action='store_false', default=True, help='test normalization True or False (default False)')
+    parser.add_argument('--test-transform', default=None, type=str, help='test transform (default None)') 
+    parser.add_argument('--test-n_batch', default=1, type=int, help='test number batches')
+    parser.add_argument('--test-n_episode', default=4, type=int, help='test number episodes')
+    parser.add_argument('--test-n_way', default=5, type=int, help='test number classes')
+    parser.add_argument('--test-n_shot', default=1, type=int, help='test number shots per class')
+    parser.add_argument('--test-n_query', default=15, type=int, help='test number queries')
 
     # model settings
     parser.add_argument('--encoder', type=str, default='convnet4', help='encoder')
