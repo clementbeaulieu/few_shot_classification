@@ -66,8 +66,8 @@ def main():
     if args.meta:
         if args.val:
             eval_val = True
-            val_meta_collate_fn = val_set.meta_collate_fn
             val_set = loader(data_dir=args.data_dir, split='val', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
+            val_meta_collate_fn = val_set.meta_collate_fn
             utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
             val_loader = DataLoader(val_set, args.val_n_episode, collate_fn=val_meta_collate_fn, num_workers=args.workers, pin_memory=True)
 
@@ -75,7 +75,7 @@ def main():
 
     inner_args = utils.config_inner_args(config.get('inner_args'))
     if args.load in ['best', 'latest']:
-        ckpt = torch.load(os.path.join(args.log_dir, 'args.load' + '.pth'))
+        ckpt = torch.load(os.path.join(args.log_dir, args.load + '.pth'))
         args.encoder = ckpt['encoder']
         config['encoder_args'] = ckpt['encoder_args']
         args.classifier = ckpt['classifier']
