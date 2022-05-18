@@ -79,6 +79,7 @@ def main():
     ### for resume from load point best or latest
     if args.load in ['best', 'latest']:
         ckpt = torch.load(os.path.join(args.log_dir, args.load + '.pth'))
+        args.arch = ckpt['arch']
         args.encoder = ckpt['encoder']
         config['encoder_args'] = ckpt['encoder_args']
         args.classifier = ckpt['classifier']
@@ -88,11 +89,12 @@ def main():
         start_epoch = ckpt['training']['epoch'] + 1
         max_va = ckpt['training']['max_va']
     else:
+        config['arch'] = args.arch
         config['encoder_args'] = config.get('encoder_args') or dict()
         config['classifier_args'] = config.get('classifier_args') or dict()
         config['encoder_args']['bn_args']['n_episode'] = args.train_n_episode
         config['classifier_args']['n_way'] = args.train_n_way
-        model = models.make(args.encoder, config['encoder_args'],args.classifier, config['classifier_args'])
+        model = models.make(args.arch, args.encoder, config['encoder_args'], args.classifier, config['classifier_args'])
         optimizer, lr_scheduler = optimizers.make(args.optimizer, model.parameters(), **config['optimizer_args'])
         start_epoch = args.start_epoch
         max_va = -1.0
@@ -248,6 +250,8 @@ def main():
         ckpt = {
             'file': __file__,
             'config': config,
+
+            'arch': args.arch,
 
             'encoder': args.encoder,
             'encoder_args': config['encoder_args'],

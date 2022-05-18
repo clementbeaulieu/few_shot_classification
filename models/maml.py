@@ -10,7 +10,7 @@ from . import classifiers
 from .modules import get_child_dict, Module, BatchNorm2d
 
 
-def make(enc_name, enc_args, clf_name, clf_args):
+def make(arch, enc_name, enc_args, clf_name, clf_args):
     """
     Initializes a random meta model.
 

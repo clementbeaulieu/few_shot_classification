@@ -60,6 +60,7 @@ def parse_args():
     parser.add_argument('--test-n_query', default=15, type=int, help='test number queries')
 
     # model settings
+    parser.add_argument('--arch', type=str, default='maml', help='model architecture (maml or prototypical_net)')    
     parser.add_argument('--encoder', type=str, default='convnet4', help='encoder')
     parser.add_argument('--classifier', type=str, default='logistic', help='classifier')
 
