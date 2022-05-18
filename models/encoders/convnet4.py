@@ -5,7 +5,6 @@ import torch.nn as nn
 from .encoders import register
 from ..modules import *
 
-
 __all__ = ['convnet4', 'wide_convnet4']
 
 

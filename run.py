@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader
 
 from tensorboardX import SummaryWriter
 
-import datasets
 import models
 import utils
 import utils.optimizers as optimizers
@@ -68,7 +67,7 @@ def main():
     eval_val = False
     if args.val:
         eval_val = True
-        val_set = loader(data_dir=args.data_dir, split='val', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
+        val_set = loader(data_dir=args.data_dir, split='val', image_size=args.val_image_size, normalization=args.val_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.val_n_batch, n_episode=args.val_n_episode, n_way=args.val_n_way, n_shot=args.val_n_shot, n_query=args.val_n_query)
         utils.log('meta-val set: {} (x{}), {}'.format(val_set[0][0].shape, len(val_set), val_set.n_classes))
         val_loader = DataLoader(val_set, args.val_n_episode, collate_fn=val_set.meta_collate_fn, num_workers=args.workers, pin_memory=True)
     
@@ -113,9 +112,9 @@ def main():
 
     ### testing
     if args.test:
-        test_set = loader(data_dir=args.data_dir, split='test', image_size=args.train_image_size, normalization=args.train_normalization, transform=args.train_transform, val_transform=args.val_transform, n_batch=args.train_n_batch, n_episode=args.train_n_episode, n_way=args.train_n_way, n_shot=args.train_n_shot, n_query=args.train_n_query)
+        test_set = loader(data_dir=args.data_dir, split='test', image_size=args.test_image_size, normalization=args.test_normalization, transform=args.test_transform, val_transform=args.test_transform, n_batch=args.test_n_batch, n_episode=args.test_n_episode, n_way=args.test_n_way, n_shot=args.test_n_shot, n_query=args.test_n_query)
         utils.log('meta-test set: {} (x{}), {}'.format(test_set[0][0].shape, len(test_set), test_set.n_classes))
-        test_loader = DataLoader(test_set, args.train_n_episode, collate_fn=test_set.meta_collate_fn, num_workers=args.workers, pin_memory=True)
+        test_loader = DataLoader(test_set, args.test_n_episode, collate_fn=test_set.meta_collate_fn, num_workers=args.workers, pin_memory=True)
 
         trainer.meta_test(args, test_loader, model, inner_args, config)
 
@@ -148,8 +147,8 @@ def main():
 
         for data in tqdm(train_loader, desc='meta-train', leave=False):
             x_shot, x_query, y_shot, y_query = data
-            x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-            x_query, y_query = x_query.cuda(), y_query.cuda()
+            '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
+            x_query, y_query = x_query.cuda(), y_query.cuda()'''
 
             if inner_args['reset_classifier']:
                 if config.get('_parallel'):
@@ -181,8 +180,8 @@ def main():
 
             for data in tqdm(val_loader, desc='meta-val', leave=False):
                 x_shot, x_query, y_shot, y_query = data
-                x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-                x_query, y_query = x_query.cuda(), y_query.cuda()
+                '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
+                x_query, y_query = x_query.cuda(), y_query.cuda()'''
 
                 if inner_args['reset_classifier']:
                     if config.get('_parallel'):

@@ -7,13 +7,12 @@ import torch.utils.checkpoint as cp
 
 from . import encoders
 from . import classifiers
-from .modules import get_child_dict, Module, BatchNorm2d
 
 models = {}
 
-def register(name):
+def register(arch):
     def decorator(cls):
-        models[name] = cls
+        models[arch] = cls
         return cls
     return decorator
 
@@ -58,14 +57,12 @@ def load(ckpt, load_clf=False, clf_name=None, clf_args=None):
     Returns:
       model (<name>): a meta model with a pre-trained encoder.
     """
-
     enc = encoders.load(ckpt)
     if load_clf:
         clf = classifiers.load(ckpt)
     else:
         if clf_name is None and clf_args is None:
-            clf = classifiers.make(
-                ckpt['classifier'], **ckpt['classifier_args'])
+            clf = classifiers.make(ckpt['classifier'], **ckpt['classifier_args'])
         else:
             clf_args['in_dim'] = enc.get_out_dim()
             clf = classifiers.make(clf_name, **clf_args)
