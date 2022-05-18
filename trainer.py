@@ -22,6 +22,11 @@ import utils.optimizers as optimizers
 
 
 #************************************************************#
+#************************* VALIDATION ***********************#
+#************************************************************#
+
+
+#************************************************************#
 #*************************** TEST ***************************#
 #************************************************************#
 
@@ -33,8 +38,8 @@ def meta_test(args, test_loader, model, inner_args, config):
     for epoch in range(1, args.epoch + 1):
         for data in tqdm(test_loader, leave=False):
             x_shot, x_query, y_shot, y_query = data
-            '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-            x_query, y_query = x_query.cuda(), y_query.cuda()'''
+            x_shot, y_shot = x_shot.to(args.device), y_shot.to(args.device)
+            x_query, y_query = x_query.to(args.device), y_query.to(args.device)
 
             if inner_args['reset_classifier']:
                 if config.get('_parallel'):

@@ -24,6 +24,8 @@ import yaml
 
 import trainer
 
+import utils.losses
+
 def main():
     global args
     if len(sys.argv) > 1:
@@ -106,8 +108,12 @@ def main():
 
     utils.log('num params: {}'.format(utils.compute_n_params(model)))
 
+    # get loss criterion associated to model
+    criterion = utils.losses.get_criterion(args)
+
     timer_elapsed, timer_epoch = utils.Timer(), utils.Timer()
 
+    #criterion.to(args.device)
     model.to(args.device)
 
     ### testing
@@ -147,8 +153,8 @@ def main():
 
         for data in tqdm(train_loader, desc='meta-train', leave=False):
             x_shot, x_query, y_shot, y_query = data
-            '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-            x_query, y_query = x_query.cuda(), y_query.cuda()'''
+            x_shot, y_shot = x_shot.to(args.device), y_shot.to(args.device)
+            x_query, y_query = x_query.to(args.device), y_query.to(args.device)
 
             if inner_args['reset_classifier']:
                 if config.get('_parallel'):
@@ -156,14 +162,13 @@ def main():
                 else:
                     model.reset_classifier()
 
-            logits = model(x_shot, x_query, y_shot,
-                           inner_args, meta_train=True)
+            logits = model(x_shot, x_query, y_shot, inner_args, meta_train=True)
             logits = logits.flatten(0, 1)
             labels = y_query.flatten()
 
             pred = torch.argmax(logits, dim=-1)
             acc = utils.compute_acc(pred, labels)
-            loss = F.cross_entropy(logits, labels)
+            loss = criterion(logits, labels)
             aves['tl'].update(loss.item(), 1)
             aves['ta'].update(acc, 1)
 
@@ -180,8 +185,8 @@ def main():
 
             for data in tqdm(val_loader, desc='meta-val', leave=False):
                 x_shot, x_query, y_shot, y_query = data
-                '''x_shot, y_shot = x_shot.cuda(), y_shot.cuda()
-                x_query, y_query = x_query.cuda(), y_query.cuda()'''
+                x_shot, y_shot = x_shot.to(args.device), y_shot.to(args.device)
+                x_query, y_query = x_query.to(args.device), y_query.to(args.device)
 
                 if inner_args['reset_classifier']:
                     if config.get('_parallel'):
@@ -196,7 +201,7 @@ def main():
 
                 pred = torch.argmax(logits, dim=-1)
                 acc = utils.compute_acc(pred, labels)
-                loss = F.cross_entropy(logits, labels)
+                loss = criterion(logits, labels)
                 aves['vl'].update(loss.item(), 1)
                 aves['va'].update(acc, 1)
 
