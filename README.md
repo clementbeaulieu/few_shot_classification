@@ -4,6 +4,14 @@ Research Paper. Master in Management HEC Paris, Major in Managerial and Financia
 
 This deep learning project provides a scalable framework for Meta-Learning architecture in a supervised environment, for few-shot classification. It provides Model-Agnostic Meta-Learning and Prototypical frameworks. It compares those methods to conventional Machine Learning. Several applications of those architectures are implemented to test their efficiency and performance.
 
+This project is higly inspired from the following respositories :
+
+https://github.com/fmu2/PyTorch-MAML
+
+https://github.com/dragen1860/MAML-Pytorch
+
+https://github.com/cbfinn/maml
+
 ## Mini-ImageNet Dataset.
 
 Mini-ImageNet is a variation of ImageNet dataset introduced by authors in their paper [Matching Networks for One-Shot Learning](https://arxiv.org/pdf/1606.04080.pdf) and is downlable from the following link, thanks to the courtesy of [Spyros Gidaris](https://github.com/gidariss/FewShotWithoutForgetting) :
@@ -19,8 +27,7 @@ Mini-ImageNet is a variation of ImageNet dataset introduced by authors in their 
 ## Models.
 
 - ConvNet4 encoder
-
-– ResNet12 encoder
+- ResNet12 encoder
 
 ## Project structure
 
@@ -83,3 +90,74 @@ If you have performed multiple experiments, tensorboard will aggregate them in t
  - Tensorboard 1.14
 
 ## References
+
+```bash
+@inproceedings{maml,
+  title={Model-agnostic meta-learning for fast adaptation of deep networks},
+  author={Finn, Chelsea and Abbeel, Pieter and Levine, Sergey},
+  booktitle={International conference on machine learning},
+  pages={1126--1135},
+  year={2017},
+  organization={PMLR}
+}
+
+@MISC{dataflowr,
+    HOWPUBLISHED = "\url{https://mlelarge.github.io/dataflowr-web/dldiy.html}",
+    TITLE = "Ecole polytechnique, MAP 583 — Deep Learning Deep Learning : Do-It-Yourself ! — dataflowr",
+    AUTHOR = "Marc LeLarge and Andrei Bursuc"
+}
+
+@article{matchingnetworks,
+  title={Matching networks for one shot learning},
+  author={Vinyals, Oriol and Blundell, Charles and Lillicrap, Timothy and Wierstra, Daan and others},
+  journal={Advances in neural information processing systems},
+  volume={29},
+  year={2016}
+}
+
+@article{prototypical,
+  title={Prototypical networks for few-shot learning},
+  author={Snell, Jake and Swersky, Kevin and Zemel, Richard},
+  journal={Advances in neural information processing systems},
+  volume={30},
+  year={2017}
+}
+
+@misc{pytorch_maml,
+  title={maml in pytorch - re-implementation and beyond},
+  author={Mu, Fangzhou},
+  howpublished={\url{https://github.com/fmu2/PyTorch-MAML}},
+  year={2020}
+}
+
+@misc{MAML_Pytorch,
+  author = {Liangqu Long},
+  title = {MAML-Pytorch Implementation},
+  year = {2018},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/dragen1860/MAML-Pytorch}},
+  commit = {master}
+}
+
+@misc{maml-authors,
+  author={Finn, Chelsea and Abbeel, Pieter and Levine, Sergey},
+  title = {Model-Agnostic Meta-Learning},
+  year = {2017},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/cbfinn/maml}}
+}
+
+
+@article{Arnold2020-ss,
+  title         = "learn2learn: A Library for {Meta-Learning} Research",
+  author        = "Arnold, S{\'e}bastien M R and Mahajan, Praateek and Datta,
+                   Debajyoti and Bunner, Ian and Zarkias, Konstantinos Saitas",
+  month         =  aug,
+  year          =  2020,
+  url           = "http://arxiv.org/abs/2008.12284",
+  archivePrefix = "arXiv",
+  primaryClass  = "cs.LG",
+  eprint        = "2008.12284"
+}
